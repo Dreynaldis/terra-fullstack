@@ -3,13 +3,14 @@ import axios from "axios"
 import Cookies from "js-cookie"
 
 const ProfilePage = () => {
-    const [user, setUser] = useState<string>("")
+    const [user, setUser] = useState<string | null>(null)
     const [profile, setProfile] = useState<any>(null)
 
     const fetchUserData = async () => {
         try {
             const UsernameCookie = Cookies.get("username")
         setUser(UsernameCookie || "")
+        
             const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/${UsernameCookie}`)
 
             setProfile(response.data)
@@ -18,10 +19,6 @@ const ProfilePage = () => {
         } catch (error) {
             console.error("Failed to fetch user data: ", error)
         }
-    }
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString)
-        return date.toLocaleDateString() + " " + date.toLocaleTimeString()
     }
     useEffect(() => {
         fetchUserData()

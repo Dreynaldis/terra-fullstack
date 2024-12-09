@@ -28,6 +28,7 @@ func (u *UserUsecase) Login(ctx context.Context, loginInput, password string) (s
 	var err error
 
 	if strings.Contains(loginInput, "@") {
+
 		user, err = u.repo.GetUserByEmail(ctx, loginInput)
 	} else {
 		user, err = u.repo.GetUserByUsername(ctx, loginInput)

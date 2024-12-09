@@ -55,7 +55,7 @@ const LoginPage = () => {
         
         Cookies.set("token", token, {expires: 1})
         Cookies.set("username", user, {expires: 1})
-
+        navigate("/profile")
       } catch (error) {
         console.error("Google login failed: ", error)
       }   

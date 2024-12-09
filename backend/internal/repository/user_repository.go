@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"errors"
 )
@@ -28,7 +29,8 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 	return &user, nil
 }
 func (r *UserRepository) GetUserByUsername(ctx context.Context, username string) (*model.User, error) {
-	user, err := r.queries.GetUserByUsername(ctx, username)
+	var normalizedInput = strings.ToLower(username)
+	user, err := r.queries.GetUserByUsername(ctx, normalizedInput)
 	if err != nil {
 		return nil, errors.New("user not found")
 	}

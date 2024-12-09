@@ -1,4 +1,4 @@
-import { Link,Navigate, useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import Cookies from "js-cookie"
 import { useState, useEffect } from "react"
 import axios from "axios"
@@ -12,7 +12,7 @@ const Navbar = () => {
   const checkLogin = async () => {
     const token = Cookies.get('token')
     const username = Cookies.get('username')
-    console.log("test");
+
     
     if (!token || !username) {
       setIsLoggedIn(false)
@@ -49,7 +49,7 @@ const Navbar = () => {
     } else {
       checkLogin()
     }
-  }, [isLoggedIn])
+  }, [])
 
   return (
     <>
