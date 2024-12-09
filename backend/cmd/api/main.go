@@ -21,4 +21,5 @@ func main() {
 	if err := srv.Run(); err != nil {
 		log.Fatalf("Error running server: %v\n", err)
 	}
+	config.InitializeOAuth()
 }

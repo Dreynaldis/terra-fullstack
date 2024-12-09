@@ -10,8 +10,8 @@ import (
 func Login(c *gin.Context, usecase *usecase.UserUsecase) {
 
 	var loginReq struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		LoginInput string `json:"usernameOrEmail"`
+		Password   string `json:"password"`
 	}
 
 	if err := c.ShouldBindJSON(&loginReq); err != nil {
@@ -19,13 +19,16 @@ func Login(c *gin.Context, usecase *usecase.UserUsecase) {
 		return
 	}
 
-	token, err := usecase.Login(c, loginReq.Email, loginReq.Password)
+	token, user, err := usecase.Login(c, loginReq.LoginInput, loginReq.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+		"user":  user.Username,
+	})
 }
 
 func Register(c *gin.Context, usecase *usecase.UserUsecase) {
@@ -33,13 +36,14 @@ func Register(c *gin.Context, usecase *usecase.UserUsecase) {
 		Username string `json:"username"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		Provider string `json:"provider"`
 	}
 	if err := c.ShouldBindJSON(&createUserReq); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err := usecase.Register(c, createUserReq.Username, createUserReq.Email, createUserReq.Password)
+	err := usecase.Register(c, createUserReq.Username, createUserReq.Email, createUserReq.Password, createUserReq.Provider)
 	if err != nil {
 		if err.Error() == "email already exists" {
 			c.JSON(http.StatusConflict, gin.H{"error": "email already exists"})
@@ -54,4 +58,20 @@ func Register(c *gin.Context, usecase *usecase.UserUsecase) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "user created successfully"})
+}
+
+func GetUserProfile(c *gin.Context, usecase *usecase.UserUsecase) {
+	username := c.Param("username")
+	user, err := usecase.GetUserByUsername(c, username)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"username": user.Username,
+		"email":    user.Email,
+		"provider": user.Provider,
+	})
 }

@@ -1,9 +1,19 @@
 import { useFormik } from "formik"
 import * as Yup from "yup"
-import { GoogleLogin } from "@react-oauth/google"
+import { GoogleLogin,CredentialResponse} from "@react-oauth/google"
+import axios from "axios"
+import Cookies from "js-cookie"
+import { useNavigate } from "react-router-dom"
 
+const API_URL = import.meta.env.VITE_API_BASE_URL
+interface FormValues {
+    usernameOrEmail: string
+    password: string  
+}
 const LoginPage = () => {
-    const formik = useFormik({
+
+  const navigate = useNavigate()
+    const formik = useFormik<FormValues>({
         initialValues:{
             usernameOrEmail : '',
             password: ''
@@ -18,24 +28,46 @@ const LoginPage = () => {
             password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
         }),
         onSubmit: (values) => {
-            console.log("Form Data: ", values)
+            handleLogin(values)
         }
     })
+    const handleLogin = async (values: FormValues) => {
+      try {
+        const response = await axios.post(`${API_URL}/users/login`, values)
+        const {token, user} = response.data
 
+        Cookies.set("token", token, {expires: 1})
+        Cookies.set("username", user, {expires: 1})
+        navigate("/profile")
+        
+      } catch (error) {
+        console.error("Login failed: ", error)
+      }
+    }
     const handleGoogleLoginFailure = () => { 
         console.error("Google login failed")
     }
-    const handleGoogleLoginSuccess = (response: any) => { 
+    const handleGoogleLoginSuccess = async(response: CredentialResponse) => { 
+      try {
         console.log("Google login success: ", response)
+        const data = await axios.post(`${API_URL}/auth/google/callback`, {token: response.credential})
+        const {token, user} = data.data
+        
+        Cookies.set("token", token, {expires: 1})
+        Cookies.set("username", user, {expires: 1})
+
+      } catch (error) {
+        console.error("Google login failed: ", error)
+      }   
     }
 
   return (
     <div className="flex justify-center content-center items-center">
 
-    <div className="container bg-white w-2/3 flex-col mx-4  border-2 rounded-2xl pt-12 my-5 justify-centera items-center content-center">
+    <div className="container md:w-1/2 lg:w-2/5 bg-white w-2/3 flex-col mx-4  border-2 rounded-2xl pt-12 my-5 justify-centera items-center content-center">
       <div className="flex justify-center h-full my-auto xl:gap-14 lg:justify-normal md:gap-5 draggable">
         <div className="flex items-center justify-center w-full lg:p-12">
-          <div className="flex items-center xl:p-10">
+          <div className="flex items-center xl:p-10 ">
             <form
               className="flex flex-col w-full h-full pb-6 text-center rounded-3xl"
               onSubmit={formik.handleSubmit}
@@ -50,6 +82,7 @@ const LoginPage = () => {
                 theme="outline"
                 text="signin_with"
                 shape="circle"
+                
                 
               />
                 </div>

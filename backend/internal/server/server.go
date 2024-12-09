@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,6 +29,12 @@ func NewServer(cfg *config.Config, db database.Service) *Server {
 	repo := repository.NewUserRepository(db.Queries())
 	userUsecase := usecase.NewUserUsecase(repo)
 
+	s.router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"content-type", "Authorization"},
+		AllowCredentials: true,
+	}))
 	route.RegisterRoutes(s.router, userUsecase)
 	s.registerRoutes()
 	return s

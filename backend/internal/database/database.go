@@ -97,8 +97,9 @@ func (s *service) seedInitialUsers() error {
 		Username string
 		Email    string
 		Password string
+		Provider string
 	}{
-		{"TerraAdmin", "terra@gmail.com", "admin"},
+		{"TerraAdmin", "terra@gmail.com", "admin123", "local"},
 	}
 
 	for _, u := range users {
@@ -118,6 +119,7 @@ func (s *service) seedInitialUsers() error {
 			Username: u.Username,
 			Email:    u.Email,
 			Password: hashedPasswords,
+			Provider: "local",
 		})
 		if err != nil {
 			log.Printf(" user %s: %v", u.Username, err)

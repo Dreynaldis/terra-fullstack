@@ -27,6 +27,14 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 
 	return &user, nil
 }
+func (r *UserRepository) GetUserByUsername(ctx context.Context, username string) (*model.User, error) {
+	user, err := r.queries.GetUserByUsername(ctx, username)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	return &user, nil
+}
 
 func (r *UserRepository) EmailExists(ctx context.Context, email string) (bool, error) {
 	user, err := r.queries.GetUserByEmail(ctx, email)
@@ -51,7 +59,7 @@ func (r *UserRepository) UsernameExists(ctx context.Context, username string) (b
 	return user != (model.User{}), nil
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, username, email, password string) error {
+func (r *UserRepository) CreateUser(ctx context.Context, username, email, password, provider string) error {
 	usernameExists, err := r.UsernameExists(ctx, username)
 	if err != nil {
 		return fmt.Errorf("error checking if username exists: %w", err)
@@ -70,6 +78,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, username, email, passwo
 		Username: username,
 		Email:    email,
 		Password: password,
+		Provider: provider,
 	})
 	if err != nil {
 		fmt.Printf("error creating user:%v\n ", err)
@@ -77,4 +86,13 @@ func (r *UserRepository) CreateUser(ctx context.Context, username, email, passwo
 	}
 
 	return nil
+}
+
+func (r *UserRepository) UpdateUserProvider(ctx context.Context, email, provider, hashGoogleId string) error {
+	err := r.queries.UpdateUserProvider(ctx, model.UpdateUserProviderParams{
+		Provider: provider,
+		Password: hashGoogleId,
+		Email:    email,
+	})
+	return err
 }
